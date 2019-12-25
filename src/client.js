@@ -1,19 +1,17 @@
 import React, { Component } from 'react';
 import { hydrate } from 'react-dom';
-import BrowserRouter from 'react-router-dom/BrowserRouter';
+import { BrowserRouter } from 'react-router-dom';
 import { Provider } from 'react-redux';
 import configureStore from './common/store/configureStore';
 import { HelmetProvider } from 'react-helmet-async';
-import JssProvider from 'react-jss/lib/JssProvider';
 import {
-  MuiThemeProvider,
+  StylesProvider,
+  ThemeProvider,
   createGenerateClassName
 } from '@material-ui/core/styles';
 import theme from './common/utils/theme';
 import App from './common/App';
 
-// This is needed in order to deduplicate the injection of CSS in the page.
-const sheetsManager = new WeakMap();
 // Create a new class name generator.
 const generateClassName = createGenerateClassName();
 
@@ -28,8 +26,8 @@ class Client extends Component {
 
   render() {
     return (
-      <JssProvider generateClassName={generateClassName}>
-        <MuiThemeProvider sheetsManager={sheetsManager} theme={theme}>
+      <StylesProvider generateClassName={generateClassName}>
+        <ThemeProvider theme={theme}>
           <Provider store={store}>
             <HelmetProvider>
               <BrowserRouter>
@@ -37,8 +35,8 @@ class Client extends Component {
               </BrowserRouter>
             </HelmetProvider>
           </Provider>
-        </MuiThemeProvider>
-      </JssProvider>
+        </ThemeProvider>
+      </StylesProvider>
     );
   }
 }

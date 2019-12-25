@@ -1,6 +1,6 @@
 import React, { Fragment } from 'react';
 import { Route, Switch } from 'react-router-dom';
-import Helmet from 'react-helmet-async';
+import { Helmet } from 'react-helmet-async';
 import CssBaseline from '@material-ui/core/CssBaseline';
 import Layout from './../common/components/Layout';
 import Home from './pages/Home';
