@@ -1,22 +1,15 @@
-import App from './common/App';
+import App from './App';
 import React from 'react';
-import { StaticRouter } from 'react-router-dom';
 import express from 'express';
 import { renderToString } from 'react-dom/server';
 import qs from 'qs';
-import { Provider } from 'react-redux';
+import fs from 'fs';
 import serialize from 'serialize-javascript';
-import { HelmetProvider } from 'react-helmet-async';
+import 'isomorphic-fetch';
+
 import configureStore from './common/store/configureStore';
 import { fetchCounter } from './common/api/counter';
-import {
-  StylesProvider,
-  ThemeProvider,
-  createGenerateClassName
-} from '@material-ui/core/styles';
-import 'isomorphic-fetch';
-import { dom as fontawesomeDom } from '@fortawesome/fontawesome-svg-core';
-import theme from './common/utils/theme';
+import { getLanguage, getTranslations, fallbackLng } from './common/utils/language';
 
 const assets = require(process.env.RAZZLE_ASSETS_MANIFEST);
 
@@ -30,35 +23,33 @@ server
       // Read the counter from the request, if provided
       const params = qs.parse(req.query);
       const counter = parseInt(params.counter, 10) || apiResult || 0;
+      // Map your domains or params to a language
+      const lang = getLanguage(req.hostname, params) || fallbackLng;
 
       // Compile an initial state
-      const preloadedState = { counter };
+      const preloadedState = {
+        counter,
+        lang: {
+          current: lang,
+          translations: getTranslations(lang, fs),
+        },
+      };
       // Create a new Redux store instance
       const store = configureStore(preloadedState);
       // Grab the initial state from our Redux store
       const finalState = store.getState();
 
-      // Create a new class name generator.
-      const generateClassName = createGenerateClassName();
-
       const helmetContext = {};
       const context = {};
       // Render the component to a string
-      const markup = renderToString(
-        <StylesProvider
-          generateClassName={generateClassName}
-        >
-          <ThemeProvider theme={theme}>
-            <Provider store={store}>
-              <HelmetProvider context={helmetContext}>
-                <StaticRouter context={context} location={req.url}>
-                  <App />
-                </StaticRouter>
-              </HelmetProvider>
-            </Provider>
-          </ThemeProvider>
-        </StylesProvider>
-      );
+      const markup = renderToString((
+        <App
+          routerContext={context}
+          helmetContext={helmetContext}
+          location={req.url}
+          store={store}
+        />
+      ));
 
       const { helmet } = helmetContext;
 
